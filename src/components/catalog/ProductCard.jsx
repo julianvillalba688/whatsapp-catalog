@@ -5,6 +5,8 @@ import { useCart } from '../../context/CartContext';
 import { formatPrice } from '../../utils/formatters';
 import { siteConfig } from '../../config';
 
+import { generateProductWhatsAppMessage } from '../../utils/whatsapp';
+
 // Determinar badge basado en propiedades del producto
 const getProductBadge = (product) => {
   if (product.isOffer && product.salePrice && product.salePrice < product.price) return { label: 'Oferta', style: 'bg-rose-500/90 text-white', icon: null };
@@ -142,7 +144,7 @@ const ProductCard = memo(({ product, viewType = 'grid' }) => {
           </button>
           
           <a
-            href={`https://wa.me/${siteConfig.whatsappNumber}?text=${encodeURIComponent(`Hola, me interesa: ${product.name} (${hasOffer ? formatPrice(product.salePrice) : formatPrice(product.price)}).`)}`}
+            href={`https://wa.me/${siteConfig.whatsappNumber}?text=${generateProductWhatsAppMessage(product)}`}
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}

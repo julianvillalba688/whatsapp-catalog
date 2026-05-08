@@ -375,29 +375,31 @@ const Home = () => {
       </section>
 
       {/* ══ 8. CTA FINAL ══ */}
-      <section className="py-24 bg-section-dark relative overflow-hidden text-center">
+      <section className="py-16 md:py-20 bg-[#1C1816] relative overflow-hidden text-center rounded-[2.5rem] mx-4 sm:mx-6 lg:mx-8 mb-10 shadow-xl">
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-gold/8 blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-72 h-72 rounded-full bg-nude/10 blur-3xl" />
+          <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-gold/10 blur-[80px]" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-nude/10 blur-[60px]" />
+          {/* Subtle texture */}
+          <div className="absolute inset-0 opacity-20 bg-[url('data:image/svg+xml,%3Csvg width=\\'40\\' height=\\'40\\' xmlns=\\'http://www.w3.org/2000/svg\\'%3E%3Ccircle cx=\\'20\\' cy=\\'20\\' r=\\'1\\' fill=\\'%23C8A96A\\' fill-opacity=\\'1\\'/%3E%3C/svg%3E')]"></div>
         </div>
         <motion.div className="max-w-2xl mx-auto px-4 relative z-10"
-          initial={{opacity:0,y:24}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{duration:0.6}}>
-          <p className="eyebrow text-gold mb-6">✦ Atención Personalizada</p>
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-white mb-6 leading-tight">
+          initial={{opacity:0,y:20}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{duration:0.6}}>
+          <p className="eyebrow text-gold mb-4">✦ Atención Personalizada</p>
+          <h2 className="text-3xl md:text-4xl lg:text-[2.75rem] font-serif font-bold text-white mb-4 leading-[1.1]">
             ¿Viste una pieza que te encantó?
           </h2>
-          <p className="text-white/60 text-lg mb-10 font-light max-w-xl mx-auto">
+          <p className="text-white/70 text-base md:text-lg mb-8 font-light max-w-lg mx-auto">
             Escríbenos por WhatsApp y te ayudamos a elegir la ideal, confirmar disponibilidad o armar un regalo perfecto.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10">
-            <Link to="/catalog" className="btn-gold px-10">Explorar Catálogo</Link>
-            <a href={`https://wa.me/${siteConfig.whatsappNumber}`} target="_blank" rel="noopener noreferrer" className="btn-whatsapp px-10">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+            <Link to="/catalog" className="btn-gold px-8 py-3 text-sm">Explorar Catálogo</Link>
+            <a href={`https://wa.me/${siteConfig.whatsappNumber}`} target="_blank" rel="noopener noreferrer" className="btn-whatsapp px-8 py-3 text-sm">
               <MessageCircle size={16} /> Consultar por WhatsApp
             </a>
           </div>
-          <div className="flex flex-wrap justify-center gap-6 text-white/40 text-xs font-medium">
-            {['Envíos seguros','Atención personalizada','Compra confiable'].map(t=>(
-              <span key={t} className="flex items-center gap-1.5"><ShieldCheck size={12} className="text-gold/50"/>{t}</span>
+          <div className="flex flex-wrap justify-center gap-5 text-white/50 text-xs font-medium">
+            {['Envíos seguros','Atención 1 a 1','Compra confiable'].map(t=>(
+              <span key={t} className="flex items-center gap-1.5"><ShieldCheck size={12} className="text-gold/60"/>{t}</span>
             ))}
           </div>
         </motion.div>

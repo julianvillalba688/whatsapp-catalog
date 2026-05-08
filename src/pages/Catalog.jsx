@@ -157,20 +157,21 @@ const Catalog = () => {
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* ── Cabecera premium ── */}
-        <div className="bg-white rounded-3xl p-8 md:p-12 mb-8 border border-border-soft shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-gold/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+        <div className="bg-[#1C1816] rounded-3xl p-8 md:p-12 mb-8 shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-gold/10 rounded-full blur-[80px] -mr-16 -mt-16 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-nude/10 rounded-full blur-[60px] pointer-events-none" />
           <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
             <div>
               <p className="text-gold font-bold tracking-widest uppercase text-xs mb-3">✦ Colección Completa</p>
-              <h1 className="text-4xl md:text-5xl font-serif font-bold text-dark mb-3">Piezas exclusivas</h1>
-              <p className="text-gray-500 font-light text-lg max-w-md">
+              <h1 className="text-4xl md:text-5xl font-serif font-bold text-white mb-3">Piezas exclusivas</h1>
+              <p className="text-white/60 font-light text-lg max-w-md">
                 Explora nuestra selección cuidada de bisutería y encuentra el accesorio perfecto para ti.
               </p>
             </div>
-            <div className="flex items-center gap-3 bg-warm px-4 py-2 rounded-xl border border-border-soft">
+            <div className="flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 px-4 py-2.5 rounded-xl">
               <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
-              <p className="text-sm font-medium text-dark">
-                Mostrando <span className="font-bold">{visibleProducts.length}</span> de {filteredProducts.length}
+              <p className="text-sm font-medium text-white">
+                Mostrando <span className="font-bold text-gold">{visibleProducts.length}</span> de {filteredProducts.length}
               </p>
             </div>
           </div>
