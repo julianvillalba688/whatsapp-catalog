@@ -103,7 +103,7 @@ const Home = () => {
             </motion.div>
 
             <motion.div className="order-1 lg:order-2 relative w-full aspect-[4/5] lg:aspect-square max-w-[420px] mx-auto" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
-              <img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800&q=80" alt="Mujer luciendo bisutería fina" fetchpriority="high" loading="eager" width="800" height="800" className="w-full h-full object-cover rounded-[2rem] shadow-soft" />
+              <img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800&q=80" alt="Mujer luciendo bisutería fina" fetchPriority="high" loading="eager" width="800" height="800" className="w-full h-full object-cover rounded-[2rem] shadow-soft" />
               <div className="absolute -bottom-5 -left-2 md:-left-6 bg-white px-5 py-4 rounded-2xl shadow-sm border border-border-soft flex items-center gap-3 z-10">
                 <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gold/10 text-gold">
                   <Star size={18} fill="currentColor" />

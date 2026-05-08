@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ShoppingCart, MessageCircle, Star, Sparkles } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { formatPrice } from '../../utils/formatters';
+import { siteConfig } from '../../config';
 
 const ProductCard = memo(({ product, viewType = 'grid' }) => {
   const { addToCart, cart } = useCart();
