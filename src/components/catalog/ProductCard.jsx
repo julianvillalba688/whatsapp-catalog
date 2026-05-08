@@ -1,19 +1,29 @@
 import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, MessageCircle, Star, Sparkles } from 'lucide-react';
+import { ShoppingCart, MessageCircle, Star, Sparkles, Heart, TrendingUp } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { formatPrice } from '../../utils/formatters';
 import { siteConfig } from '../../config';
 
+// Determinar badge basado en propiedades del producto
+const getProductBadge = (product) => {
+  if (product.isOffer && product.salePrice && product.salePrice < product.price) return { label: 'Oferta', style: 'bg-rose-500/90 text-white', icon: null };
+  if (product.isBestSeller) return { label: 'M\u00e1s vendido', style: 'bg-dark/90 text-white', icon: <TrendingUp size={9} /> };
+  if (product.isFavorite) return { label: 'Favorito', style: 'bg-nude/80 text-[#8a4a4a]', icon: <Heart size={9} fill="currentColor" /> };
+  if (product.isNew) return { label: 'Nuevo', style: 'bg-gold/90 text-white', icon: <Sparkles size={9} /> };
+  if (product.featured) return { label: 'Destacado', style: 'bg-white/90 text-gold-dark border border-gold/20', icon: <Star size={9} fill="currentColor" /> };
+  return null;
+};
+
 const ProductCard = memo(({ product, viewType = 'grid' }) => {
   const { addToCart, cart } = useCart();
   const inCart = cart.some(item => item.id === product.id);
+  const badge = getProductBadge(product);
 
   const handleAddToCart = (e) => {
     e.preventDefault();
-    if (!inCart) {
-      addToCart(product);
-    }
+    e.stopPropagation();
+    if (!inCart) addToCart(product);
   };
 
   const hasOffer = product.salePrice && product.salePrice < product.price;
@@ -70,38 +80,28 @@ const ProductCard = memo(({ product, viewType = 'grid' }) => {
 
   // Vista Grid / Default (Premium)
   return (
-    <div className="group flex flex-col bg-white border border-border-soft rounded-[1.25rem] overflow-hidden hover:shadow-soft transition-all duration-300">
-      
-      {/* Imagen (Fija aspect-[3/4]) */}
+    <div className="group flex flex-col bg-white border border-border-soft rounded-[1.25rem] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_48px_-8px_rgba(28,24,22,0.18),0_2px_12px_-4px_rgba(200,169,106,0.12)]">
+
+
+      {/* Link imagen */}
       <Link to={`/product/${product.slug || product.id}`} className="relative block aspect-[3/4] bg-warm overflow-hidden">
         <img 
           src={product.image} 
           alt={product.name} 
           loading="lazy" 
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]" 
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" 
           onError={(e) => {
             e.currentTarget.src = 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=500&q=75';
           }}
         />
-        
-        {/* Badges Flotantes */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5">
-          {product.featured && (
-            <span className="bg-white/90 backdrop-blur-sm text-gold-dark text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1 border border-white/50">
-              <Star size={10} fill="currentColor" /> Destacado
-            </span>
-          )}
-          {product.isNew && (
-            <span className="bg-gold/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1">
-              <Sparkles size={10} /> Nuevo
-            </span>
-          )}
-          {hasOffer && (
-            <span className="bg-accent/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider shadow-sm">
-              Oferta
-            </span>
-          )}
-        </div>
+        {/* Overlay sutil en hover */}
+        <div className="absolute inset-0 bg-dark/0 group-hover:bg-dark/5 transition-colors duration-300" />
+        {/* Badge único */}
+        {badge && (
+          <span className={`absolute top-3 left-3 flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm backdrop-blur-sm ${badge.style}`}>
+            {badge.icon}{badge.label}
+          </span>
+        )}
       </Link>
 
       {/* Contenido */}
@@ -127,37 +127,28 @@ const ProductCard = memo(({ product, viewType = 'grid' }) => {
           </div>
         </Link>
 
-        {/* Botones de acción siempre visibles en mobile (botones grandes de bloque) */}
+        {/* Botones de acción */}
         <div className="mt-auto space-y-2">
           <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleAddToCart(e);
-            }}
-            className={`w-full py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-colors min-h-[44px] ${
+            onClick={handleAddToCart}
+            className={`w-full py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 min-h-[44px] ${
               inCart 
                 ? 'bg-green-50 text-green-700 border border-green-200' 
-                : 'bg-warm text-dark hover:bg-gold hover:text-white border border-border-soft'
+                : 'bg-dark text-white hover:bg-[#2e201b] shadow-sm hover:shadow-soft'
             }`}
           >
-            <ShoppingCart size={16} />
-            {inCart ? 'En carrito' : 'Añadir al carrito'}
+            <ShoppingCart size={15} />
+            {inCart ? 'En carrito \u2713' : 'Añadir al carrito'}
           </button>
           
           <a
-            href={`https://wa.me/${siteConfig.whatsappNumber}?text=${encodeURIComponent(`Hola, me interesa el producto: ${product.name} (${hasOffer ? formatPrice(product.salePrice) : formatPrice(product.price)}).`)}`}
+            href={`https://wa.me/${siteConfig.whatsappNumber}?text=${encodeURIComponent(`Hola, me interesa: ${product.name} (${hasOffer ? formatPrice(product.salePrice) : formatPrice(product.price)}).`)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full py-2.5 bg-dark text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#2e201b] transition-colors min-h-[44px]"
-            onClick={(e) => {
-              e.stopPropagation();
-              import('../../utils/whatsapp').then(({ trackWhatsAppClick }) => {
-                if (trackWhatsAppClick) trackWhatsAppClick('whatsapp_click_product', product);
-              });
-            }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full py-2.5 bg-[#25D366] text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#1ebe5d] transition-colors min-h-[44px] shadow-sm"
           >
-            <MessageCircle size={16} className="text-green-400" />
+            <MessageCircle size={15} />
             Pedir por WhatsApp
           </a>
         </div>

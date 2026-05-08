@@ -247,18 +247,23 @@ const Home = () => {
       </section>
 
       {/* ══ 5. PRODUCTOS DESTACADOS ══ */}
-      <section className="py-20 bg-section-nude">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-10 gap-4"
+      <section className="py-20 relative overflow-hidden" style={{background:'linear-gradient(160deg,#FDF0E8 0%,#FAF7F2 50%,#FDF0E8 100%)'}}>
+        {/* Glow decorativo */}
+        <div className="pointer-events-none absolute top-0 right-0 w-96 h-96 rounded-full bg-gold/6 blur-[80px] -mr-32 -mt-32" />
+        <div className="pointer-events-none absolute bottom-0 left-0 w-72 h-72 rounded-full bg-nude/20 blur-[60px] -ml-20 -mb-20" />
+
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <motion.div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-12 gap-4"
             variants={stagger} initial="hidden" whileInView="show" viewport={{once:true,margin:'-60px'}}>
             <div>
               <motion.p variants={fadeUp} className="eyebrow mb-2">Más queridas</motion.p>
               <motion.h2 variants={fadeUp} className="section-title">Favoritos de Clientas</motion.h2>
-              <div className="divider-gold-left mt-4" />
+              <motion.p variants={fadeUp} className="section-subtitle mt-3 max-w-sm">Piezas delicadas elegidas para acompañarte todos los días.</motion.p>
+              <div className="divider-gold-left mt-5" />
             </div>
-            <motion.div variants={fadeUp}>
-              <Link to="/catalog" className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-dark hover:text-gold transition-colors group">
-                Ver catálogo completo <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+            <motion.div variants={fadeUp} className="flex-shrink-0">
+              <Link to="/catalog" className="btn-outline text-sm px-6">
+                Ver catálogo completo <ChevronRight size={14} />
               </Link>
             </motion.div>
           </motion.div>
@@ -279,52 +284,54 @@ const Home = () => {
           ) : (
             <ProductGrid products={products} columnsView="4" />
           )}
-
-          <div className="mt-10 text-center sm:hidden">
-            <Link to="/catalog" className="btn-outline w-full max-w-xs mx-auto">Ver todo el catálogo</Link>
-          </div>
         </div>
       </section>
 
-      {/* ══ 6. BANNER OSCURO ══ */}
+      {/* ══ 6. BANNER EDITORIAL ══ */}
       <section className="relative overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[480px]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[500px]">
           {/* Image side */}
-          <div className="relative min-h-[280px] order-1">
-            <img src="https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=900&q=80"
-              alt="Colección premium" loading="lazy" className="absolute inset-0 w-full h-full object-cover"
-              onError={e=>{ e.currentTarget.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=900&q=80'; }} />
-            <div className="absolute inset-0 bg-dark/30" />
-            {/* Decorative frame */}
-            <div className="absolute inset-4 border border-white/15 rounded-2xl pointer-events-none hidden lg:block" />
-          </div>
+          <motion.div className="relative min-h-[300px] order-2 lg:order-1"
+            initial={{opacity:0,x:-20}} whileInView={{opacity:1,x:0}} viewport={{once:true}} transition={{duration:0.6}}>
+            <img
+              src="https://images.unsplash.com/photo-1599643478524-fb66f7ca065b?auto=format&fit=crop&w=900&q=80"
+              alt="Colección de accesorios premium" loading="lazy"
+              className="absolute inset-0 w-full h-full object-cover"
+              onError={e=>{ e.currentTarget.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=900&q=80'; }}
+            />
+            <div className="absolute inset-0 bg-dark/25" />
+            <div className="absolute inset-5 border border-white/15 rounded-2xl pointer-events-none hidden lg:block" />
+          </motion.div>
 
           {/* Text side */}
-          <div className="bg-section-dark relative flex flex-col justify-center px-8 sm:px-14 py-16 order-2">
-            <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-gold/5 blur-3xl pointer-events-none" />
+          <div className="bg-section-dark relative flex flex-col justify-center px-8 sm:px-14 py-16 order-1 lg:order-2">
+            <div className="absolute top-0 right-0 w-72 h-72 rounded-full bg-gold/6 blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-nude/5 blur-3xl pointer-events-none" />
             <div className="relative z-10">
               <motion.div initial={{opacity:0,y:20}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{duration:0.5}}>
-                <p className="eyebrow text-gold mb-4">✦ Selección Premium</p>
+                <div className="flex items-center gap-3 mb-6">
+                  <span className="eyebrow text-gold">✦ Selección premium</span>
+                  <span className="w-8 h-px bg-gold/30" />
+                </div>
                 <h2 className="text-4xl md:text-5xl font-serif font-bold text-white mb-5 leading-tight">
                   Diseñadas para<br /><span className="italic text-gold">brillar</span> contigo
                 </h2>
                 <p className="text-white/60 text-base mb-8 max-w-md leading-relaxed font-light">
-                  Cada pieza es elegida a mano para que encuentres exactamente lo que tu estilo necesita.
+                  Piezas pensadas para cada momento, desde el día a día hasta esa ocasión especial que merece una joya perfecta.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Link to="/catalog" className="btn-gold inline-flex">
-                    Descubrir Ahora <ChevronRight size={16} />
+                  <Link to="/catalog" className="btn-gold px-8">
+                    Descubrir ahora <ChevronRight size={16} />
                   </Link>
                   <a href={`https://wa.me/${siteConfig.whatsappNumber}`} target="_blank" rel="noopener noreferrer"
-                    className="btn-whatsapp inline-flex">
+                    className="btn-whatsapp px-8">
                     <MessageCircle size={16} /> WhatsApp
                   </a>
                 </div>
-                {/* Mini trust row */}
-                <div className="mt-8 flex gap-6">
-                  {['Envíos coordinados','Atención rápida'].map(t=>(
-                    <span key={t} className="flex items-center gap-1.5 text-white/50 text-xs">
-                      <ShieldCheck size={12} className="text-gold/70" />{t}
+                <div className="mt-8 pt-6 border-t border-white/10 flex gap-8">
+                  {['Calidad garantizada','Envíos seguros'].map(t=>(
+                    <span key={t} className="flex items-center gap-2 text-white/40 text-xs">
+                      <ShieldCheck size={12} className="text-gold/60"/>{t}
                     </span>
                   ))}
                 </div>
@@ -333,6 +340,7 @@ const Home = () => {
           </div>
         </div>
       </section>
+
 
       {/* ══ 7. TESTIMONIOS ══ */}
       <section className="py-20 bg-white">
