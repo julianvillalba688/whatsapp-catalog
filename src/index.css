@@ -35,6 +35,40 @@
 }
 
 @layer components {
+  /* ── Layout helpers ── */
+  .lumina-container {
+    @apply max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  .section-padding {
+    @apply py-16 md:py-20 lg:py-24;
+  }
+
+  /* ── Cards premium ── */
+  .premium-card {
+    @apply bg-white border border-border-soft rounded-[1.5rem] shadow-soft overflow-hidden;
+  }
+
+  /* ── Glow ── */
+  .soft-glow {
+    box-shadow: 0 0 60px 10px rgba(200, 169, 106, 0.12);
+  }
+
+  /* ── Subtle texture ── */
+  .subtle-texture {
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='1' fill='%23C8A96A' fill-opacity='0.06'/%3E%3C/svg%3E");
+  }
+
+  /* ── Shadows ── */
+  .shadow-premium {
+    box-shadow: 0 8px 48px -8px rgba(28, 24, 22, 0.18), 0 2px 12px -4px rgba(200, 169, 106, 0.12);
+  }
+
+  /* ── Gold line decoration ── */
+  .gold-line {
+    @apply w-10 h-0.5;
+    background: linear-gradient(90deg, var(--gold), transparent);
+  }
+
   /* ── Buttons ── */
   .btn-primary {
     @apply px-6 py-3 bg-dark text-white rounded-xl font-semibold transition-all duration-300 hover:bg-[#2e201b] hover:shadow-soft shadow-sm focus:outline-none focus:ring-2 focus:ring-dark focus:ring-offset-2 flex items-center justify-center gap-2 min-h-[44px] tracking-wide text-sm;
@@ -48,6 +82,9 @@
   .btn-gold {
     @apply px-6 py-3 bg-gold text-white rounded-xl font-semibold transition-all duration-300 hover:bg-gold-dark focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 flex items-center justify-center gap-2 min-h-[44px] text-sm tracking-wide;
   }
+  /* Alias names from brief */
+  .btn-primary-dark { @apply btn-primary; }
+  .btn-outline-premium { @apply btn-outline; }
   .btn-ghost {
     @apply px-5 py-2.5 text-dark rounded-xl font-medium transition-all duration-200 hover:bg-warm focus:outline-none focus:ring-2 focus:ring-dark focus:ring-offset-2 flex items-center justify-center gap-2 min-h-[44px] text-sm;
   }

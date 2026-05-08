@@ -52,12 +52,13 @@ const Home = () => {
       </Helmet>
 
       {/* ══ 1. HERO ══ */}
-      <section className="relative min-h-[90vh] flex items-center bg-section-warm overflow-hidden">
-        {/* Decorative blobs */}
+      <section className="relative min-h-[90vh] flex items-center overflow-hidden subtle-texture"
+        style={{background:'linear-gradient(145deg,#FAF7F2 0%,#FDF0E8 40%,#FAF7F2 100%)'}}>
+        {/* Glows decorativos */}
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-gold/6 blur-[80px] -mr-40 -mt-40" />
-          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-nude/30 blur-[60px] -ml-20 -mb-20" />
-          <div className="absolute top-1/2 left-1/3 w-64 h-64 rounded-full bg-cream/60 blur-[40px]" />
+          <div className="absolute top-0 right-0 w-[560px] h-[560px] rounded-full bg-gold/8 blur-[90px] -mr-32 -mt-32" />
+          <div className="absolute bottom-0 left-0 w-[380px] h-[380px] rounded-full bg-nude/25 blur-[70px] -ml-16 -mb-16" />
+          <div className="absolute top-1/3 left-1/4 w-56 h-56 rounded-full bg-cream/80 blur-[40px]" />
         </div>
 
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-16 lg:py-24">
@@ -78,7 +79,7 @@ const Home = () => {
               </motion.h1>
 
               <motion.p variants={fadeUp} className="text-lg text-gray-500 mb-10 max-w-md leading-relaxed font-light">
-                Piezas únicas seleccionadas con cuidado. Compra de forma fácil y segura directamente por WhatsApp.
+                Piezas elegantes y cuidadosamente seleccionadas para acompañarte en el día a día, regalos especiales y momentos únicos.
               </motion.p>
 
               <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 mb-10">
@@ -108,33 +109,42 @@ const Home = () => {
             <motion.div className="order-1 lg:order-2 relative" initial={{opacity:0}} animate={{opacity:1}} transition={{duration:0.8}}>
               {/* Main image */}
               <div className="relative aspect-[3/4] max-w-[360px] mx-auto lg:mx-0 lg:ml-auto">
-                <div className="absolute inset-0 rounded-[2.5rem] overflow-hidden shadow-soft border border-border-soft">
+                {/* Golden frame accent */}
+                <div className="absolute -inset-2 rounded-[2.8rem] border border-gold/20 pointer-events-none z-20" />
+                <div className="absolute inset-0 rounded-[2.5rem] overflow-hidden shadow-premium border border-border-soft">
                   <img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800&q=80"
                     alt="Bisutería premium Lumina" fetchPriority="high" loading="eager"
                     className="w-full h-full object-cover"
                     onError={e=>{ e.currentTarget.src='https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=800&q=80'; }} />
                   <div className="absolute inset-0 bg-gradient-to-t from-dark/20 to-transparent" />
-                </div>
-
+                
                 {/* Floating card: clientes */}
                 <motion.div
-                  className="absolute -bottom-5 -left-6 bg-white px-4 py-3 rounded-2xl shadow-soft border border-border-soft flex items-center gap-3 z-10"
+                  className="absolute -bottom-5 -left-4 sm:-left-8 bg-white px-4 py-3 rounded-2xl shadow-premium border border-border-soft flex items-center gap-3 z-10"
                   animate={{y:[0,-6,0]}} transition={{duration:4,repeat:Infinity,ease:'easeInOut'}}>
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center bg-gold/10 text-gold">
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center bg-gold/10 text-gold flex-shrink-0">
                     <Star size={16} fill="currentColor" />
                   </div>
                   <div>
-                    <p className="text-[9px] text-gray-400 uppercase tracking-widest font-bold">Clientas felices</p>
+                    <p className="text-[9px] text-gray-400 uppercase tracking-widest font-bold whitespace-nowrap">Clientas felices</p>
                     <p className="font-serif text-sm font-bold text-dark">+500 pedidos</p>
                   </div>
                 </motion.div>
 
-                {/* Floating badge: envios */}
+                {/* Floating badge: compra segura */}
                 <motion.div
-                  className="absolute -top-4 -right-4 bg-dark text-white px-3 py-2 rounded-xl text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5 shadow-md"
+                  className="absolute -top-3 -right-3 sm:-right-5 bg-dark text-white px-3 py-2 rounded-xl text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5 shadow-md"
                   animate={{y:[0,-4,0]}} transition={{duration:3.5,repeat:Infinity,ease:'easeInOut',delay:0.5}}>
-                  <ShieldCheck size={12} className="text-gold" /> Compra segura
+                  <ShieldCheck size={11} className="text-gold" /> Compra segura
                 </motion.div>
+
+                {/* Floating badge: WhatsApp */}
+                <motion.div
+                  className="absolute bottom-20 -right-4 sm:-right-8 bg-[#25D366] text-white px-3 py-2 rounded-xl text-[10px] font-bold flex items-center gap-1.5 shadow-md"
+                  animate={{y:[0,-5,0]}} transition={{duration:4.5,repeat:Infinity,ease:'easeInOut',delay:1}}>
+                  <MessageCircle size={11} /> Pide por WhatsApp
+                </motion.div>
+                </div>
               </div>
 
               {/* Second small image */}
