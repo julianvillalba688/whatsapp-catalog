@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Filter, LayoutGrid, Rows3, Columns4 } from 'lucide-react';
+import { Filter, LayoutGrid, Rows3, Columns4, Search } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import ProductGrid from '../components/catalog/ProductGrid';
 import ProductFilters from '../components/catalog/ProductFilters';
@@ -128,7 +128,7 @@ const Catalog = () => {
       
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4 border-b border-[#eaddd7] pb-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4 border-b border-[#eaddd7] pb-6">
           <div>
             <h1 className="text-4xl font-serif font-bold text-dark mb-2">Colección Exclusiva</h1>
             <p className="text-primary-600 font-medium tracking-wide">
@@ -136,40 +136,78 @@ const Catalog = () => {
             </p>
           </div>
           
-          <div className="w-full md:w-auto flex items-center justify-between gap-4">
-            {/* Selector de Columnas */}
-            <div className="flex items-center bg-white border border-[#eaddd7] rounded-xl p-1 shadow-sm">
-              <button 
-                onClick={() => setColumnsView('1')}
-                className={`p-2 rounded-lg transition-colors ${columnsView === '1' ? 'bg-primary-100 text-primary-700' : 'text-gray-400 hover:text-dark'}`}
-                aria-label="Vista de 1 columna"
-              >
-                <Rows3 size={18} />
-              </button>
-              <button 
-                onClick={() => setColumnsView('2')}
-                className={`p-2 rounded-lg transition-colors ${columnsView === '2' ? 'bg-primary-100 text-primary-700' : 'text-gray-400 hover:text-dark'}`}
-                aria-label="Vista de 2 columnas"
-              >
-                <LayoutGrid size={18} />
-              </button>
-              <button 
-                onClick={() => setColumnsView('4')}
-                className={`hidden md:block p-2 rounded-lg transition-colors ${columnsView === '4' ? 'bg-primary-100 text-primary-700' : 'text-gray-400 hover:text-dark'}`}
-                aria-label="Vista de 4 columnas"
-              >
-                <Columns4 size={18} />
-              </button>
-            </div>
-
+          {/* Desktop Column Selector (hidden on mobile) */}
+          <div className="hidden lg:flex items-center bg-white border border-[#eaddd7] rounded-xl p-1 shadow-sm">
             <button 
-              onClick={() => setIsMobileFiltersOpen(true)}
-              className="lg:hidden flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-white border border-[#eaddd7] text-dark rounded-xl font-medium shadow-sm hover:bg-gray-50"
+              onClick={() => setColumnsView('2')}
+              className={`p-2 rounded-lg transition-colors ${columnsView === '2' ? 'bg-primary-100 text-primary-700' : 'text-gray-400 hover:text-dark'}`}
+              aria-label="Vista de 2 columnas"
             >
-              <Filter size={18} className="text-primary-500" />
-              Filtros
+              <LayoutGrid size={18} />
+            </button>
+            <button 
+              onClick={() => setColumnsView('4')}
+              className={`p-2 rounded-lg transition-colors ${columnsView === '4' ? 'bg-primary-100 text-primary-700' : 'text-gray-400 hover:text-dark'}`}
+              aria-label="Vista de 4 columnas"
+            >
+              <Columns4 size={18} />
             </button>
           </div>
+        </div>
+
+        {/* Mobile Search & Filters Bar (hidden on desktop) */}
+        <div className="lg:hidden flex flex-col gap-4 mb-8">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Buscar joyas..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-white border border-[#eaddd7] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 shadow-sm text-gray-800"
+            />
+            <Search className="absolute left-3 top-3.5 text-primary-400" size={20} />
+          </div>
+
+          <div className="flex items-center justify-between gap-3">
+             <button 
+                onClick={() => setIsMobileFiltersOpen(true)}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white border border-[#eaddd7] text-dark rounded-xl font-medium shadow-sm hover:bg-gray-50 relative min-h-[44px]"
+                aria-label="Abrir filtros"
+              >
+                <Filter size={18} className="text-primary-500" />
+                Filtros
+                {(activeCategory || minPrice || maxPrice || sortBy !== 'featured') && (
+                  <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-accent rounded-full shadow-sm"></span>
+                )}
+              </button>
+
+             {/* Mobile Column Selector */}
+              <div className="flex items-center bg-white border border-[#eaddd7] rounded-xl p-1 shadow-sm min-h-[44px]">
+                <button 
+                  onClick={() => setColumnsView('1')}
+                  className={`p-2 rounded-lg transition-colors ${columnsView === '1' ? 'bg-primary-100 text-primary-700' : 'text-gray-400 hover:text-dark'}`}
+                  aria-label="Vista de 1 columna"
+                >
+                  <Rows3 size={20} />
+                </button>
+                <button 
+                  onClick={() => setColumnsView('2')}
+                  className={`p-2 rounded-lg transition-colors ${columnsView === '2' ? 'bg-primary-100 text-primary-700' : 'text-gray-400 hover:text-dark'}`}
+                  aria-label="Vista de 2 columnas"
+                >
+                  <LayoutGrid size={20} />
+                </button>
+              </div>
+          </div>
+          
+          {(searchTerm || activeCategory || minPrice || maxPrice || sortBy !== 'featured') && (
+            <button 
+              onClick={handleClearFilters}
+              className="text-primary-600 text-sm font-bold flex items-center justify-center gap-2 py-2 hover:bg-primary-50 rounded-xl transition-colors"
+            >
+              Limpiar todos los filtros
+            </button>
+          )}
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8 xl:gap-12">
