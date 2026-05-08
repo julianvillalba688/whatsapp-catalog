@@ -8,10 +8,13 @@
   :root {
     --warm-bg: #FAF7F2;
     --gold: #C8A96A;
+    --gold-dark: #A6884A;
     --nude: #E8B7B7;
     --cream: #FDF0E8;
     --border-soft: #EDE5DF;
+    --soft-border: #EDE5DF;
     --dark: #1C1816;
+    --whatsapp: #25D366;
   }
 
   body {
@@ -42,6 +45,15 @@
   .section-padding {
     @apply py-16 md:py-20 lg:py-24;
   }
+
+  /* ── Background utilities ── */
+  .bg-warm  { background-color: var(--warm-bg); }
+  .bg-cream { background-color: var(--cream); }
+  .text-gold { color: var(--gold); }
+
+  /* ── Shadow utilities ── */
+  .shadow-soft    { box-shadow: 0 2px 40px -8px rgba(28,24,22,0.12); }
+  .shadow-premium { box-shadow: 0 8px 48px -8px rgba(28,24,22,0.18), 0 2px 12px -4px rgba(200,169,106,0.12); }
 
   /* ── Cards premium ── */
   .premium-card {
@@ -222,3 +234,18 @@
   0%, 100% { transform: translateY(0); }
   50%       { transform: translateY(-10px); }
 }
+@keyframes slowFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33%       { transform: translateY(-8px) rotate(0.5deg); }
+  66%       { transform: translateY(-4px) rotate(-0.5deg); }
+}
+@keyframes softPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+/* ── Animation utility classes ── */
+.animate-slow-float { animation: slowFloat 7s ease-in-out infinite; }
+.animate-soft-pulse { animation: softPulse 3s ease-in-out infinite; }
+.animate-float-y    { animation: floatY 5s ease-in-out infinite; }
+
