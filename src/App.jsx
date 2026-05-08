@@ -1,6 +1,8 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Layout } from './components/layout/Layout';
 import Home from './pages/Home';
 import { CartProvider } from './context/CartContext';
@@ -46,6 +48,8 @@ function App() {
           </Routes>
         </CartProvider>
       </BrowserRouter>
+      <Analytics />
+      <SpeedInsights />
     </HelmetProvider>
   );
 }

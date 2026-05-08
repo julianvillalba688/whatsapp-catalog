@@ -11,12 +11,7 @@ const ProductCard = ({ product, priority = false }) => {
   const handleWhatsAppClick = (e) => {
     e.preventDefault();
     const message = generateProductWhatsAppMessage(product);
-    openWhatsApp(message);
-    
-    // Rastreo de conversión (preparado para GTM/Analytics)
-    if (window.dataLayer) {
-      window.dataLayer.push({ event: 'click_whatsapp_product', product: product.name });
-    }
+    openWhatsApp(message, 'whatsapp_click_product');
   };
 
   const handleAddToCart = (e) => {

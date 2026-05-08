@@ -195,26 +195,50 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 6. FAQ Breve */}
+      {/* 6. Cuidados y FAQ Breve */}
       <section className="py-20 bg-[#fcf9f8] border-t border-[#f2e8e5]">
-        <div className="max-w-3xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-serif font-bold text-dark mb-10">Preguntas Frecuentes</h2>
-          <div className="space-y-6 text-left">
-            {[
-              { q: '¿Qué métodos de pago aceptan?', a: 'Aceptamos transferencias bancarias, Yape/Plin, y efectivo contra entrega en zonas habilitadas. Te daremos los detalles por WhatsApp.' },
-              { q: '¿Tienen envíos a todo el país?', a: 'Sí, realizamos envíos seguros. El costo varía según tu ubicación y se coordina directamente al momento de confirmar tu pedido.' },
-              { q: '¿Cómo debo cuidar mi bisutería?', a: 'Te recomendamos no mojarlas, evitar aplicarles perfumes directamente y guardarlas en su estuche original para prolongar su brillo.' }
-            ].map((faq, i) => (
-              <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-[#f2e8e5]">
-                <h4 className="font-bold text-dark mb-2">{faq.q}</h4>
-                <p className="text-gray-600 text-sm leading-relaxed">{faq.a}</p>
-              </div>
-            ))}
+        <div className="max-w-4xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-12">
+          {/* Cuidados */}
+          <div>
+            <h2 className="text-3xl font-serif font-bold text-dark mb-8">Cuidados</h2>
+            <ul className="space-y-4 text-gray-600">
+              <li className="flex items-start gap-3"><span className="text-primary-500">•</span> Evita perfumes directos.</li>
+              <li className="flex items-start gap-3"><span className="text-primary-500">•</span> Guarda tus piezas en un lugar seco.</li>
+              <li className="flex items-start gap-3"><span className="text-primary-500">•</span> Limpia suavemente con paño seco.</li>
+              <li className="flex items-start gap-3"><span className="text-primary-500">•</span> Evita agua, sudor y productos químicos.</li>
+            </ul>
           </div>
-          <div className="mt-10">
-            <a href={`https://wa.me/${siteConfig.whatsappNumber}`} target="_blank" rel="noopener noreferrer" className="text-primary-600 font-bold hover:underline">
-              ¿Tienes otra duda? Escríbenos directamente
-            </a>
+
+          {/* FAQ */}
+          <div>
+            <h2 className="text-3xl font-serif font-bold text-dark mb-8">Preguntas Frecuentes</h2>
+            <div className="space-y-6 text-left">
+              {[
+                { q: '¿Cómo hago un pedido?', a: 'Elige tus joyas y escríbenos al WhatsApp. Ahí tomaremos tu pedido.' },
+                { q: '¿Tienen envíos?', a: 'Sí, contamos con envíos. Coordinamos todo por mensaje.' },
+                { q: '¿Cómo confirmo disponibilidad?', a: 'Al enviarnos el mensaje por WhatsApp, te diremos al instante si hay stock.' },
+                { q: '¿Puedo pedir varias piezas?', a: '¡Claro! Puedes usar el carrito para agregar varias piezas y enviar un solo mensaje.' },
+                { q: '¿Qué métodos de pago aceptan?', a: 'Te confirmaremos los medios de pago disponibles al coordinar la entrega por WhatsApp.' },
+                { q: '¿Cómo cuido mi bisutería?', a: 'Revisa la sección de Cuidados para mantener tus piezas perfectas.' }
+              ].map((faq, i) => (
+                <div key={i} className="border-b border-[#eaddd7] pb-4">
+                  <h4 className="font-bold text-dark mb-2">{faq.q}</h4>
+                  <p className="text-gray-600 text-sm leading-relaxed">{faq.a}</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-8">
+              <button 
+                onClick={() => {
+                  import('../utils/whatsapp').then(({ openWhatsApp }) => {
+                    openWhatsApp('Hola, tengo algunas dudas adicionales.', 'whatsapp_click_faq');
+                  });
+                }}
+                className="text-primary-600 font-bold hover:underline"
+              >
+                ¿Tienes otra duda? Escríbenos directamente
+              </button>
+            </div>
           </div>
         </div>
       </section>

@@ -37,7 +37,7 @@ try {
 
 // Función helper para inyectar metadata en el <head>
 const injectMeta = (html, metaData) => {
-  let injected = html.replace('<title>Vite + React</title>', `<title>${metaData.title}</title>`);
+  let injected = html.replace(/<title>.*?<\/title>/, `<title>${metaData.title}</title>`);
   
   const metaTags = `
     <meta name="description" content="${metaData.description}">

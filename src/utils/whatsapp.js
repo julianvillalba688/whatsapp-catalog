@@ -1,5 +1,6 @@
 // utils/whatsapp.js
 import { siteConfig } from '../config';
+import { track } from '@vercel/analytics';
 
 export const generateWhatsAppMessage = (cart, total) => {
   let message = `Hola, quiero consultar estos productos:\n\n`;
@@ -30,7 +31,14 @@ export const generateProductWhatsAppMessage = (product) => {
   return encodeURIComponent(message);
 };
 
-export const openWhatsApp = (message) => {
+export const openWhatsApp = (message, eventName = 'whatsapp_click_general') => {
+  // Disparar métrica en Vercel Analytics
+  try {
+    track(eventName);
+  } catch (error) {
+    console.error('Error tracking event:', error);
+  }
+
   const url = `https://wa.me/${siteConfig.whatsappNumber}?text=${message}`;
   window.open(url, '_blank');
 };

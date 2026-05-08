@@ -46,10 +46,7 @@ const ProductDetail = () => {
   }
 
   const handleWhatsApp = () => {
-    openWhatsApp(generateProductWhatsAppMessage(product));
-    if (window.dataLayer) {
-      window.dataLayer.push({ event: 'click_whatsapp_product_detail', product: product.name });
-    }
+    openWhatsApp(generateProductWhatsAppMessage(product), 'whatsapp_click_product_detail');
   };
 
   const isAvailable = product.status !== 'agotado';
