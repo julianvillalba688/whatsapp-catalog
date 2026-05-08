@@ -1,8 +1,9 @@
 import React from 'react';
-import { X, Trash2, Plus, Minus, Send } from 'lucide-react';
+import { X, Trash2, Plus, Minus, Send, ShoppingCart } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { generateWhatsAppMessage, openWhatsApp } from '../../utils/whatsapp';
 import { siteConfig } from '../../config';
+import { formatPrice } from '../../utils/formatters';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const CartDrawer = () => {
@@ -109,9 +110,9 @@ const CartDrawer = () => {
                             <Plus size={16} />
                           </button>
                         </div>
-                        <span className="font-bold text-gray-900">
-                          {siteConfig.currencySymbol}{item.price * item.quantity}
-                        </span>
+                        <p className="font-medium text-dark">
+                          {formatPrice(item.price * item.quantity)}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -124,15 +125,13 @@ const CartDrawer = () => {
               <div className="border-t p-6 bg-gray-50">
                 <div className="flex justify-between mb-4">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="font-medium">{siteConfig.currencySymbol}{cartTotal}</span>
+                  <span className="font-medium">{formatPrice(cartTotal)}</span>
                 </div>
-                <div className="flex justify-between mb-6">
-                  <span className="text-lg font-bold text-gray-900">Total Estimado</span>
-                  <span className="text-xl font-bold text-green-600">
-                    {siteConfig.currencySymbol}{cartTotal}
-                  </span>
+                <div className="flex justify-between items-center text-lg font-bold text-dark mt-2 pt-2 border-t border-gray-100">
+                  <span>Total estimado</span>
+                  <span>{formatPrice(cartTotal)}</span>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-3 mt-6">
                   <button
                     onClick={handleCheckout}
                     className="w-full btn-whatsapp flex items-center justify-center gap-2 py-4 text-lg"
@@ -155,8 +154,5 @@ const CartDrawer = () => {
     </AnimatePresence>
   );
 };
-
-// Necesitamos importar ShoppingCart para el estado vacío
-import { ShoppingCart } from 'lucide-react';
 
 export default CartDrawer;

@@ -1,12 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, MessageCircle, ChevronRight } from 'lucide-react';
+import { ShoppingCart, MessageCircle, Check } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
-import { siteConfig } from '../../config';
 import { generateProductWhatsAppMessage, openWhatsApp } from '../../utils/whatsapp';
+import { formatPrice } from '../../utils/formatters';
 
 const ProductCard = ({ product, priority = false }) => {
-  const { addToCart } = useCart();
+  const { cart, addToCart } = useCart();
+  const isInCart = cart.some(item => item.sku === product.sku);
 
   const handleWhatsAppClick = (e) => {
     e.preventDefault();
@@ -22,7 +23,7 @@ const ProductCard = ({ product, priority = false }) => {
   return (
     <Link 
       to={`/product/${product.slug}`} 
-      className="group flex flex-col h-full bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-delicate transition-all duration-500 border border-[#f2e8e5]"
+      className="group flex flex-col h-full bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-delicate transition-all duration-300 border border-[#f2e8e5]"
       aria-label={`Ver detalles de ${product.name}`}
     >
       <div className="relative aspect-[4/5] overflow-hidden bg-[#fdf8f6]">
@@ -54,7 +55,7 @@ const ProductCard = ({ product, priority = false }) => {
           alt={product.name}
           width="400"
           height="500"
-          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
+          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out"
           loading={priority ? "eager" : "lazy"}
           fetchpriority={priority ? "high" : "auto"}
           decoding="async"
@@ -63,63 +64,76 @@ const ProductCard = ({ product, priority = false }) => {
             e.target.src = 'https://via.placeholder.com/400x500?text=Imagen+No+Disponible';
           }}
         />
-        
-        {/* Acciones Rápidas (Desktop Hover) */}
-        <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 bg-gradient-to-t from-dark/60 to-transparent hidden md:flex items-end justify-center gap-2">
-          <button
-            onClick={handleAddToCart}
-            disabled={product.status === 'agotado'}
-            className="flex-1 bg-white text-dark py-2 rounded-xl text-sm font-semibold hover:bg-primary-50 transition-colors flex items-center justify-center gap-2"
-            aria-label="Agregar al carrito"
-          >
-            <ShoppingCart size={16} />
-            Agregar
-          </button>
-        </div>
       </div>
 
       {/* Contenido (Textos, Precios, Mobile CTA) */}
-      <div className="p-4 sm:p-5 flex flex-col flex-grow bg-white">
-        <div className="text-[10px] uppercase tracking-widest text-primary-500 mb-1.5 font-semibold">
+      <div className="p-3 sm:p-5 flex flex-col flex-grow bg-white">
+        <div className="text-[10px] uppercase tracking-widest text-primary-500 mb-1 font-semibold">
           {product.category}
         </div>
         
-        <h3 className="font-serif text-base sm:text-lg text-dark mb-1 line-clamp-2 leading-snug group-hover:text-primary-600 transition-colors">
+        <h3 className="font-serif text-sm sm:text-base md:text-lg text-dark mb-1 line-clamp-2 leading-tight group-hover:text-primary-600 transition-colors">
           {product.name}
         </h3>
 
         {product.shortDescription && (
-          <p className="text-xs text-gray-500 mb-3 line-clamp-1">
+          <p className="hidden sm:block text-xs text-gray-500 mb-3 line-clamp-1">
             {product.shortDescription}
           </p>
         )}
         
         <div className="mt-auto pt-2">
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex flex-wrap items-center gap-2 mb-3">
             {product.isOffer && product.salePrice ? (
               <>
-                <span className="text-lg font-bold text-accent">
-                  {siteConfig.currencySymbol}{product.salePrice}
+                <span className="text-base sm:text-lg font-bold text-accent">
+                  {formatPrice(product.salePrice)}
                 </span>
-                <span className="text-sm text-gray-400 line-through">
-                  {siteConfig.currencySymbol}{product.price}
+                <span className="text-xs sm:text-sm text-gray-400 line-through">
+                  {formatPrice(product.price)}
                 </span>
               </>
             ) : (
-              <span className="text-lg font-bold text-dark">
-                {siteConfig.currencySymbol}{product.price}
+              <span className="text-base sm:text-lg font-bold text-dark">
+                {formatPrice(product.price)}
               </span>
             )}
           </div>
           
-          {/* Botón CTA explícito para WhatsApp en móvil y escritorio */}
-          <button
-            onClick={handleWhatsAppClick}
-            className="w-full bg-primary-50 hover:bg-primary-100 text-primary-800 border border-primary-200 py-2.5 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2"
-          >
-            <MessageCircle size={16} className="text-green-600" />
-            Pedir por WhatsApp
-          </button>
+          {/* Botones de acción siempre visibles en móvil */}
+          <div className="flex flex-col gap-2 mt-2">
+            <button
+              onClick={handleAddToCart}
+              disabled={product.status === 'agotado'}
+              className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors min-h-[44px] ${
+                isInCart 
+                ? 'bg-green-50 text-green-700 border border-green-200' 
+                : 'bg-dark text-white hover:bg-primary-900 shadow-sm'
+              }`}
+              aria-label={isInCart ? "Producto en carrito" : "Agregar al carrito"}
+            >
+              {isInCart ? (
+                <>
+                  <Check size={16} />
+                  En carrito
+                </>
+              ) : (
+                <>
+                  <ShoppingCart size={16} />
+                  Añadir al carrito
+                </>
+              )}
+            </button>
+            
+            <button
+              onClick={handleWhatsAppClick}
+              className="w-full bg-primary-50 hover:bg-primary-100 text-primary-800 border border-primary-200 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors flex items-center justify-center gap-2 min-h-[44px]"
+              aria-label="Pedir por WhatsApp"
+            >
+              <MessageCircle size={16} className="text-green-600" />
+              Pedir por WhatsApp
+            </button>
+          </div>
         </div>
       </div>
     </Link>

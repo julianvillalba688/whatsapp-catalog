@@ -1,21 +1,29 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Filter } from 'lucide-react';
+import { Filter, LayoutGrid, Rows3, Columns4 } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import ProductGrid from '../components/catalog/ProductGrid';
 import ProductFilters from '../components/catalog/ProductFilters';
 import PromoBanner from '../components/ui/PromoBanner';
 import { siteConfig } from '../config';
+import { normalizeText } from '../utils/formatters';
 
 const Catalog = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   
+  // Filters State
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('');
   const [sortBy, setSortBy] = useState('featured');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
+  
+  // UI State
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+  const [columnsView, setColumnsView] = useState(() => {
+    return localStorage.getItem('catalog_columns') || '4';
+  });
+  const [visibleCount, setVisibleCount] = useState(16);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -36,6 +44,16 @@ const Catalog = () => {
     loadProducts();
   }, []);
 
+  // Save columns preference
+  useEffect(() => {
+    localStorage.setItem('catalog_columns', columnsView);
+  }, [columnsView]);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setVisibleCount(16);
+  }, [searchTerm, activeCategory, sortBy, minPrice, maxPrice]);
+
   const categories = useMemo(() => {
     const cats = new Set(products.map(p => p.category).filter(Boolean));
     return Array.from(cats).sort();
@@ -44,13 +62,14 @@ const Catalog = () => {
   const filteredProducts = useMemo(() => {
     let result = [...products];
 
-    // Search filter
+    // Search filter (Normalized)
     if (searchTerm) {
-      const lowerSearch = searchTerm.toLowerCase();
+      const query = normalizeText(searchTerm);
       result = result.filter(p => 
-        p.name.toLowerCase().includes(lowerSearch) || 
-        (p.description && p.description.toLowerCase().includes(lowerSearch)) ||
-        p.sku.toLowerCase().includes(lowerSearch)
+        normalizeText(p.name).includes(query) || 
+        (p.description && normalizeText(p.description).includes(query)) ||
+        normalizeText(p.sku).includes(query) ||
+        (p.category && normalizeText(p.category).includes(query))
       );
     }
 
@@ -67,8 +86,9 @@ const Catalog = () => {
       result = result.filter(p => (p.salePrice || p.price) <= parseFloat(maxPrice));
     }
 
-    // Sort
-    result.sort((a, b) => {
+    // Sort - creating a copy to not mutate
+    const sortedResult = [...result];
+    sortedResult.sort((a, b) => {
       switch (sortBy) {
         case 'price-low': return (a.salePrice || a.price) - (b.salePrice || b.price);
         case 'price-high': return (b.salePrice || b.price) - (a.salePrice || a.price);
@@ -80,31 +100,76 @@ const Catalog = () => {
       }
     });
 
-    return result;
+    return sortedResult;
   }, [products, searchTerm, activeCategory, sortBy, minPrice, maxPrice]);
+
+  const visibleProducts = filteredProducts.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredProducts.length;
+
+  const loadMore = () => {
+    setVisibleCount(prev => prev + 16);
+  };
+
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setActiveCategory('');
+    setMinPrice('');
+    setMaxPrice('');
+    setSortBy('featured');
+    setVisibleCount(16);
+  };
 
   return (
     <div className="bg-[#fcf9f8] min-h-screen pt-10 pb-24">
       <Helmet>
-        <title>Colección Completa | {siteConfig.siteName}</title>
+        <title>Catálogo Completo | {siteConfig.siteName}</title>
         <meta name="description" content="Explora nuestro catálogo de bisutería y accesorios. Encuentra aretes, collares, pulseras y sets exclusivos." />
       </Helmet>
       
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4 border-b border-[#eaddd7] pb-8">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4 border-b border-[#eaddd7] pb-6">
           <div>
             <h1 className="text-4xl font-serif font-bold text-dark mb-2">Colección Exclusiva</h1>
-            <p className="text-primary-600 font-medium tracking-wide">Mostrando {filteredProducts.length} piezas</p>
+            <p className="text-primary-600 font-medium tracking-wide">
+              Mostrando {visibleProducts.length} de {filteredProducts.length} piezas
+            </p>
           </div>
           
-          <button 
-            onClick={() => setIsMobileFiltersOpen(true)}
-            className="lg:hidden w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-white border border-[#eaddd7] text-dark rounded-xl font-medium shadow-sm"
-          >
-            <Filter size={20} className="text-primary-500" />
-            Filtros
-          </button>
+          <div className="w-full md:w-auto flex items-center justify-between gap-4">
+            {/* Selector de Columnas */}
+            <div className="flex items-center bg-white border border-[#eaddd7] rounded-xl p-1 shadow-sm">
+              <button 
+                onClick={() => setColumnsView('1')}
+                className={`p-2 rounded-lg transition-colors ${columnsView === '1' ? 'bg-primary-100 text-primary-700' : 'text-gray-400 hover:text-dark'}`}
+                aria-label="Vista de 1 columna"
+              >
+                <Rows3 size={18} />
+              </button>
+              <button 
+                onClick={() => setColumnsView('2')}
+                className={`p-2 rounded-lg transition-colors ${columnsView === '2' ? 'bg-primary-100 text-primary-700' : 'text-gray-400 hover:text-dark'}`}
+                aria-label="Vista de 2 columnas"
+              >
+                <LayoutGrid size={18} />
+              </button>
+              <button 
+                onClick={() => setColumnsView('4')}
+                className={`hidden md:block p-2 rounded-lg transition-colors ${columnsView === '4' ? 'bg-primary-100 text-primary-700' : 'text-gray-400 hover:text-dark'}`}
+                aria-label="Vista de 4 columnas"
+              >
+                <Columns4 size={18} />
+              </button>
+            </div>
+
+            <button 
+              onClick={() => setIsMobileFiltersOpen(true)}
+              className="lg:hidden flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-white border border-[#eaddd7] text-dark rounded-xl font-medium shadow-sm hover:bg-gray-50"
+            >
+              <Filter size={18} className="text-primary-500" />
+              Filtros
+            </button>
+          </div>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8 xl:gap-12">
@@ -125,6 +190,7 @@ const Catalog = () => {
               setMaxPrice={setMaxPrice}
               isMobileFiltersOpen={isMobileFiltersOpen}
               setIsMobileFiltersOpen={setIsMobileFiltersOpen}
+              onClear={handleClearFilters}
             />
             <div className="sticky top-[500px]">
               <PromoBanner />
@@ -138,21 +204,26 @@ const Catalog = () => {
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
               </div>
             ) : (
-              <ProductGrid products={filteredProducts} />
+              <>
+                <ProductGrid 
+                  products={visibleProducts} 
+                  columnsView={columnsView} 
+                  onClear={handleClearFilters}
+                  hasFiltersActive={searchTerm || activeCategory || minPrice || maxPrice || sortBy !== 'featured'}
+                />
+                
+                {hasMore && (
+                  <div className="mt-12 flex justify-center">
+                    <button 
+                      onClick={loadMore}
+                      className="px-8 py-3 bg-white border-2 border-primary-200 text-primary-800 font-bold rounded-full hover:bg-primary-50 transition-colors shadow-sm"
+                    >
+                      Cargar más productos
+                    </button>
+                  </div>
+                )}
+              </>
             )}
-          </div>
-
-          {/* Right Sidebar Promo (optional, shown only on extra large screens) */}
-          <div className="hidden xl:block w-64 flex-shrink-0">
-            <div className="sticky top-24">
-               <div className="rounded-2xl overflow-hidden shadow-delicate relative group">
-                 <img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=500&q=80" alt="Promo" className="w-full h-[400px] object-cover group-hover:scale-105 transition-transform duration-700" />
-                 <div className="absolute inset-0 bg-gradient-to-t from-dark/80 to-transparent flex flex-col justify-end p-6">
-                    <h4 className="text-white font-serif text-xl mb-2">Colección Nupcial</h4>
-                    <p className="text-white/80 text-sm">Piezas perfectas para ese día especial.</p>
-                 </div>
-               </div>
-            </div>
           </div>
 
         </div>

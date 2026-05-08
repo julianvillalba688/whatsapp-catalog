@@ -5,6 +5,7 @@ import { MessageCircle, ShoppingCart, ArrowLeft, ShieldCheck, Truck, ChevronRigh
 import { useCart } from '../context/CartContext';
 import { siteConfig } from '../config';
 import { generateProductWhatsAppMessage, openWhatsApp } from '../utils/whatsapp';
+import { formatPrice } from '../utils/formatters';
 
 const ProductDetail = () => {
   const { slug } = useParams();
@@ -116,14 +117,15 @@ const ProductDetail = () => {
 
               <div className="flex items-end gap-3 mb-6 pb-6 border-b border-[#f2e8e5]">
                 {product.isOffer && product.salePrice ? (
-                  <>
-                    <span className="text-3xl font-bold text-accent">{siteConfig.currencySymbol}{product.salePrice}</span>
-                    <span className="text-xl text-gray-400 line-through mb-1">{siteConfig.currencySymbol}{product.price}</span>
-                  </>
+                  <div className="flex items-end gap-3 mb-4">
+                    <span className="text-3xl font-bold text-accent">{formatPrice(product.salePrice)}</span>
+                    <span className="text-xl text-gray-400 line-through mb-1">{formatPrice(product.price)}</span>
+                  </div>
                 ) : (
-                  <span className="text-3xl font-bold text-dark">{siteConfig.currencySymbol}{product.price}</span>
-                )}
-              </div>
+                  <div className="mb-4">
+                  <span className="text-3xl font-bold text-dark">{formatPrice(product.price)}</span>
+                  </div>
+                )}</div>
 
               <div className="prose prose-sm sm:prose text-gray-600 mb-6">
                 <p className="whitespace-pre-line leading-relaxed">

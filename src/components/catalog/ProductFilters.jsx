@@ -14,7 +14,8 @@ const ProductFilters = ({
   maxPrice,
   setMaxPrice,
   isMobileFiltersOpen,
-  setIsMobileFiltersOpen
+  setIsMobileFiltersOpen,
+  onClear
 }) => {
   
   const FilterContent = () => (
@@ -98,6 +99,16 @@ const ProductFilters = ({
           <ChevronDown className="absolute right-3 top-2.5 text-primary-400 pointer-events-none" size={18} />
         </div>
       </div>
+
+      {/* Clear Filters Button */}
+      {onClear && (
+        <button 
+          onClick={onClear}
+          className="w-full py-2.5 mt-4 text-primary-600 font-medium hover:bg-primary-50 rounded-xl transition-colors border border-transparent hover:border-primary-100"
+        >
+          Limpiar todos los filtros
+        </button>
+      )}
     </div>
   );
 
