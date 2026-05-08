@@ -74,24 +74,24 @@ const Home = () => {
 
               <motion.h1 variants={fadeUp} className="text-5xl sm:text-6xl lg:text-[4.5rem] font-serif font-bold text-dark leading-[1.05] tracking-tight mb-6">
                 Bisutería<br />
-                <span className="italic text-gold">delicada</span><br />
-                para brillar
+                <span className="italic text-gold">femenina</span><br />
+                seleccionada para brillar
               </motion.h1>
 
               <motion.p variants={fadeUp} className="text-lg text-gray-500 mb-10 max-w-md leading-relaxed font-light">
-                Piezas elegantes y cuidadosamente seleccionadas para acompañarte en el día a día, regalos especiales y momentos únicos.
+                Piezas delicadas y versátiles que elevan tu look sin esfuerzo. Listas para acompañarte todos los días y fáciles de pedir por WhatsApp.
               </motion.p>
 
               <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 mb-10">
                 <Link to="/catalog" className="btn-primary px-8 text-sm group">
-                  Ver Colección
+                  Ver Catálogo
                   <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <a href={`https://wa.me/${siteConfig.whatsappNumber}?text=${encodeURIComponent('Hola, me gustaría recibir asesoría sobre sus accesorios.')}`}
                    target="_blank" rel="noopener noreferrer"
                    className="btn-outline px-8 text-sm bg-white">
                   <MessageCircle size={16} className="text-green-500" />
-                  Pedir Asesoría
+                  Consultar por WhatsApp
                 </a>
               </motion.div>
 
@@ -142,7 +142,7 @@ const Home = () => {
                 <motion.div
                   className="absolute bottom-20 -right-4 sm:-right-8 bg-[#25D366] text-white px-3 py-2 rounded-xl text-[10px] font-bold flex items-center gap-1.5 shadow-md"
                   animate={{y:[0,-5,0]}} transition={{duration:4.5,repeat:Infinity,ease:'easeInOut',delay:1}}>
-                  <MessageCircle size={11} /> Pide por WhatsApp
+                  <MessageCircle size={11} /> Consulta rápida
                 </motion.div>
                 </div>
               </div>
@@ -321,11 +321,11 @@ const Home = () => {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Link to="/catalog" className="btn-gold px-8">
-                    Descubrir ahora <ChevronRight size={16} />
+                    Ver colección <ChevronRight size={16} />
                   </Link>
                   <a href={`https://wa.me/${siteConfig.whatsappNumber}`} target="_blank" rel="noopener noreferrer"
                     className="btn-whatsapp px-8">
-                    <MessageCircle size={16} /> WhatsApp
+                    <MessageCircle size={16} /> Escríbenos
                   </a>
                 </div>
                 <div className="mt-8 pt-6 border-t border-white/10 flex gap-8">
@@ -382,17 +382,17 @@ const Home = () => {
         </div>
         <motion.div className="max-w-2xl mx-auto px-4 relative z-10"
           initial={{opacity:0,y:24}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{duration:0.6}}>
-          <p className="eyebrow text-gold mb-6">✦ Lumina Accesorios</p>
+          <p className="eyebrow text-gold mb-6">✦ Atención Personalizada</p>
           <h2 className="text-4xl md:text-5xl font-serif font-bold text-white mb-6 leading-tight">
-            Encuentra tu pieza<br /><span className="italic text-gold">ideal</span> hoy
+            ¿Viste una pieza que te encantó?
           </h2>
           <p className="text-white/60 text-lg mb-10 font-light max-w-xl mx-auto">
-            Explora el catálogo completo y descubre los accesorios perfectos para ti o para regalar.
+            Escríbenos por WhatsApp y te ayudamos a elegir la ideal, confirmar disponibilidad o armar un regalo perfecto.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10">
-            <Link to="/catalog" className="btn-gold px-10">Ver Catálogo</Link>
+            <Link to="/catalog" className="btn-gold px-10">Explorar Catálogo</Link>
             <a href={`https://wa.me/${siteConfig.whatsappNumber}`} target="_blank" rel="noopener noreferrer" className="btn-whatsapp px-10">
-              <MessageCircle size={16} /> WhatsApp
+              <MessageCircle size={16} /> Consultar por WhatsApp
             </a>
           </div>
           <div className="flex flex-wrap justify-center gap-6 text-white/40 text-xs font-medium">
