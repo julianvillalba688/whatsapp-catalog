@@ -23,7 +23,7 @@ const HOME_MEDIA = {
     ocasiones: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80',
     regalar: 'https://images.unsplash.com/photo-1584302179602-e4c3d3fd629d?auto=format&fit=crop&w=800&q=80'
   },
-  banner: 'https://images.unsplash.com/photo-1533130061792-64b345e4a833?auto=format&fit=crop&w=1200&q=80'
+  banner: 'https://images.unsplash.com/photo-1627280373830-80519f6a735c?auto=format&fit=crop&w=1200&q=80'
 };
 
 // Security check for duplicates in development
