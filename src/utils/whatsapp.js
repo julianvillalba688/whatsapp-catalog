@@ -20,12 +20,15 @@ export const generateWhatsAppMessage = (cart, total) => {
 };
 
 export const generateProductWhatsAppMessage = (product) => {
+  if (!product) return "";
   const price = product.salePrice && product.salePrice < product.price ? product.salePrice : product.price;
+  const productId = product.slug || product.id || product.sku;
+  
   let message = `Hola, estoy interesado/a en este producto:\n\n`;
-  message += `Producto: *${product.name}*\n`;
-  message += `SKU: ${product.sku}\n`;
+  message += `Producto: *${product.name || 'Producto'}*\n`;
+  message += `SKU: ${product.sku || 'N/A'}\n`;
   message += `Precio: ${formatPrice(price)}\n`;
-  message += `Link: ${window.location.origin}/product/${product.slug}\n\n`;
+  message += `Link: ${window.location.origin}/product/${productId}\n\n`;
   message += `¿Me puedes dar más información?`;
 
   return encodeURIComponent(message);
