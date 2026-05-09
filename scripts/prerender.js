@@ -17,11 +17,11 @@ if (!fs.existsSync(indexHtmlPath)) {
 const template = fs.readFileSync(indexHtmlPath, 'utf-8');
 
 const siteConfig = {
-  siteName: "Lumina Accesorios",
-  url: "https://lumina-accesorios.com", // Cambiar por dominio real
+  siteName: "Salem Store",
+  url: "https://salem-store.com", // Cambiar por dominio real
   description: "Bisutería delicada, accesorios femeninos y joyería elegante. Compra fácil por WhatsApp con envíos seguros y atención personalizada.",
-  currency: "USD",
-  logoUrl: "https://lumina-accesorios.com/logo.png"
+  currency: "COP",
+  logoUrl: "https://salem-store.com/logo.png"
 };
 
 // Leer productos del JSON (que ya debería estar en public/data/ o dist/data/)

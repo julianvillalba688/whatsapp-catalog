@@ -113,7 +113,7 @@ const Home = () => {
                 <div className="absolute -inset-2 rounded-[2.8rem] border border-gold/20 pointer-events-none z-20" />
                 <div className="absolute inset-0 rounded-[2.5rem] overflow-hidden shadow-premium border border-border-soft">
                   <img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800&q=80"
-                    alt="Bisutería premium Lumina" fetchPriority="high" loading="eager"
+                    alt="Bisutería premium Salem Store" fetchPriority="high" loading="eager"
                     className="w-full h-full object-cover"
                     onError={e=>{ e.currentTarget.src='https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=800&q=80'; }} />
                   <div className="absolute inset-0 bg-gradient-to-t from-dark/20 to-transparent" />
@@ -347,7 +347,7 @@ const Home = () => {
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div className="text-center mb-12" variants={stagger} initial="hidden" whileInView="show" viewport={{once:true,margin:'-60px'}}>
             <motion.p variants={fadeUp} className="eyebrow mb-3">Reseñas</motion.p>
-            <motion.h2 variants={fadeUp} className="section-title">Lo que dicen<br />de Lumina</motion.h2>
+            <motion.h2 variants={fadeUp} className="section-title">Lo que dicen<br />de Salem Store</motion.h2>
             <div className="divider-gold" />
           </motion.div>
 

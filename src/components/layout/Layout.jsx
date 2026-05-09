@@ -7,7 +7,7 @@ import CartDrawer from '../cart/CartDrawer';
 import WhatsAppButton from '../ui/WhatsAppButton';
 
 export const Layout = () => {
-  const { cartCount, isCartOpen, setIsCartOpen } = useCart();
+  const { cartItemCount, isCartOpen, toggleCart } = useCart();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
@@ -22,18 +22,12 @@ export const Layout = () => {
 
   return (
     <div className="min-h-screen flex flex-col font-sans">
-      <header className={`sticky top-0 z-40 w-full transition-all duration-300 ${scrolled ? 'bg-white/96 backdrop-blur-md shadow-delicate border-b border-border-soft py-2' : 'bg-warm py-3'}`}>
+      <header className={`sticky top-0 z-40 w-full transition-all duration-300 ${scrolled ? 'bg-white/96 backdrop-blur-md shadow-delicate border-b border-border-soft py-2' : 'bg-[#fcf9f8] py-3'}`}>
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2.5 group" aria-label="Lumina Accesorios - Inicio">
-              <div className="w-9 h-9 bg-dark rounded-full flex items-center justify-center text-white font-serif italic text-lg shadow-sm group-hover:bg-gold transition-colors duration-300">
-                {siteConfig.brandName.charAt(0)}
-              </div>
-              <div>
-                <span className="font-serif font-bold text-xl tracking-wide text-dark leading-none">{siteConfig.brandName}</span>
-                <p className="text-[9px] text-gold font-medium tracking-[0.15em] uppercase leading-none mt-0.5">Accesorios</p>
-              </div>
+            <Link to="/" className="flex items-center group h-14" aria-label="Salem Store - Inicio">
+              <img src={siteConfig.logo} alt={siteConfig.siteName} className="h-9 md:h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
             </Link>
 
             {/* Desktop Nav */}
@@ -43,13 +37,16 @@ export const Layout = () => {
             </nav>
 
             <div className="flex items-center gap-3">
-              <button onClick={() => setIsCartOpen(true)}
-                className="relative p-2.5 text-dark hover:text-gold transition-colors rounded-xl hover:bg-warm min-h-[44px] min-w-[44px] flex items-center justify-center"
+              <a href={`https://wa.me/${siteConfig.whatsappNumber}`} target="_blank" rel="noopener noreferrer" className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-green-600 bg-green-50 hover:bg-green-100 transition-colors">
+                <MessageCircle size={14}/> Contacto
+              </a>
+              <button onClick={toggleCart}
+                className="relative p-2.5 text-[#1C1816] hover:text-[#C8A96A] transition-colors rounded-xl hover:bg-warm min-h-[44px] min-w-[44px] flex items-center justify-center"
                 aria-label="Abrir carrito de compras">
                 <ShoppingCart size={22} />
-                {cartCount > 0 && (
+                {cartItemCount > 0 && (
                   <span className="absolute top-1 right-1 w-4 h-4 text-[9px] font-bold text-white bg-dark rounded-full flex items-center justify-center">
-                    {cartCount}
+                    {cartItemCount}
                   </span>
                 )}
               </button>
@@ -102,14 +99,8 @@ export const Layout = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-10 pb-10 border-b border-white/10">
             {/* Brand */}
             <div className="md:col-span-2">
-              <div className="flex items-center gap-2.5 mb-5">
-                <div className="w-9 h-9 bg-gold rounded-full flex items-center justify-center text-white font-serif italic text-lg">
-                  {siteConfig.brandName.charAt(0)}
-                </div>
-                <div>
-                  <span className="font-serif font-bold text-xl tracking-wide text-white">{siteConfig.brandName}</span>
-                  <p className="text-[9px] text-gold/70 font-medium tracking-[0.15em] uppercase mt-0.5">Accesorios</p>
-                </div>
+              <div className="mb-5">
+                <img src={siteConfig.logo} alt={siteConfig.siteName} className="h-10 w-auto object-contain invert brightness-0" />
               </div>
               <p className="text-white/50 text-sm leading-relaxed mb-6 max-w-sm">
                 Piezas exclusivas que resaltan tu belleza natural. Atención personalizada y envíos seguros. Tu estilo, nuestro arte.

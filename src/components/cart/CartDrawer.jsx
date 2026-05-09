@@ -47,7 +47,7 @@ const CartDrawer = () => {
             {/* Header */}
             <div className="flex items-center justify-between p-6 bg-white border-b border-[#eaddd7] shadow-sm relative">
               <div>
-                <p className="text-gold font-bold tracking-widest uppercase text-[10px] mb-1">✦ Lumina Accesorios</p>
+                <p className="text-gold font-bold tracking-widest uppercase text-[10px] mb-1">✦ Salem Store</p>
                 <h2 className="text-2xl font-serif font-bold text-dark">Tu Colección</h2>
               </div>
               <button
