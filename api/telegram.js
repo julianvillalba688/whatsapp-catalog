@@ -1,34 +1,14 @@
+let pendingOrders = {};
+
 export default async function handler(req, res) {
-  console.log("TELEGRAM_WEBHOOK_HIT", {
-    method: req.method,
-    query: req.query,
-    body: JSON.stringify(req.body)
-  });
+  console.log("TELEGRAM_WEBHOOK_HIT", { method: req.method, query: req.query });
 
   if (req.method !== "POST") {
     return res.status(200).json({ ok: true, message: "Bot activo" });
   }
 
-  // Validaciones de entorno
-  if (!process.env.TELEGRAM_BOT_TOKEN) {
-    console.error("Missing TELEGRAM_BOT_TOKEN");
-    return res.status(500).json({ error: "Missing TELEGRAM_BOT_TOKEN" });
-  }
-  if (!process.env.PRODUCTS_URL) {
-    console.error("Missing PRODUCTS_URL");
-    return res.status(500).json({ error: "Missing PRODUCTS_URL" });
-  }
-  if (!process.env.APPS_SCRIPT_URL || !process.env.APPS_SCRIPT_TOKEN) {
-    console.error("Missing Apps Script config");
-    return res.status(500).json({ error: "Missing Apps Script config" });
-  }
-
-  const { secret } = req.query;
-  if (secret !== process.env.BOT_SECRET) {
-    console.log("BOT_SECRET_INVALID", {
-      expectedExists: Boolean(process.env.BOT_SECRET),
-      received: secret ? "present" : "missing"
-    });
+  if (req.query.secret !== process.env.BOT_SECRET) {
+    console.log("BOT_SECRET_INVALID", { received: req.query.secret ? "present" : "missing" });
     return res.status(401).json({ error: "No autorizado" });
   }
 
@@ -37,147 +17,177 @@ export default async function handler(req, res) {
 
   const chatId = update.message.chat.id;
   const text = update.message.text || "";
-  console.log("MESSAGE_RECEIVED", { chatId, text });
+  console.log("text recibido", text);
 
   const send = async (msg) => {
-    try {
-      await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chat_id: chatId, text: msg, parse_mode: "HTML" })
-      });
-    } catch (e) {
-      console.error("TELEGRAM_SEND_ERROR", e);
-    }
+    await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, text: msg, parse_mode: "HTML" })
+    });
   };
-
-  if (text.startsWith("/start")) {
-    return send("<b>Ejemplo de uso:</b>\n\n2 Anillo Aurora\n3 RR1604\nPedido de Laura\nDirección: Calle 123\nPago: Nequi\nTotal 50000");
-  }
 
   try {
     const prodRes = await fetch(process.env.PRODUCTS_URL);
     const allProducts = await prodRes.json();
     const products = allProducts.filter(p => p.status === "disponible" && p.stock > 0);
-    console.log("PRODUCTS_LOADED", { count: products.length });
+    const productsSummary = products.map(p => ({ 
+      sku: p.sku, 
+      name: p.name, 
+      price: p.price, 
+      salePrice: p.salePrice, 
+      stock: p.stock, 
+      status: p.status 
+    }));
 
-    const norm = (t) => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, " ").replace(/\s+/g, " ").trim();
+    const textLower = text.toLowerCase().trim();
+    const isConfirm = ["si", "sí", "ok", "confirmar", "confirmado", "listo", "registrar", "guardar"].includes(textLower);
+    const isCancel = ["cancelar", "borrar", "no"].includes(textLower);
 
-    // Extraer datos generales mejorado para lenguaje natural
-    // Cliente
-    const clientMatch = text.match(/(?:pedido de|pedido para|cliente:|([a-z]+)\s+pidio)/i);
-    let client = "Desconocido";
-    if (clientMatch) {
-      client = (clientMatch[1] || clientMatch[0].replace(/pedido de|pedido para|cliente:/i, "")).trim();
+    if (isConfirm && pendingOrders[chatId]) {
+      const order = pendingOrders[chatId];
+      const appsRes = await fetch(process.env.APPS_SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({ token: process.env.APPS_SCRIPT_TOKEN, ...order })
+      });
+      const appsResult = await appsRes.text();
+      console.log("Apps Script response", appsResult);
+      delete pendingOrders[chatId];
+      return send("✅ <b>Pedido registrado en Google Sheets.</b>");
     }
 
-    // Precio manual / Total
-    const totalMatch = text.match(/(?:total|queda en|por todo|total:|por|precio:)\s*(\d+[\.\d+]*)/i);
-    let totalManual = 0;
-    if (totalMatch) {
-      totalManual = parseInt(totalMatch[1].replace(/\./g, ""));
+    if (isCancel) {
+      delete pendingOrders[chatId];
+      return send("Pedido cancelado.");
     }
 
-    // Pago
-    const payMatch = text.match(/(nequi|daviplata|efectivo|transferencia|tarjeta)/i);
-    const payment = payMatch ? payMatch[1] : "Pendiente";
+    const aiData = await callAIForOrderExtraction(text, productsSummary);
+    console.log("IA raw response", aiData.raw);
+    console.log("parsed JSON", aiData.json);
 
-    // Estado
-    const statusMatch = text.match(/(?:estado:?)\s*([a-z]+)/i);
-    const estado = statusMatch ? statusMatch[1] : "Pendiente";
+    const ext = aiData.json;
 
-    // Dirección
-    const dirMatch = text.match(/(?:dirección|dir|entrega en|calle|carrera|barrio|casa|apartamento|direccion:?)\s*([^\n,]+)/i);
-    const address = dirMatch ? dirMatch[0].replace(/dirección|dir|entrega en|direccion/i, "").replace(/^[:\s]+/, "").trim() : "No especificada";
+    if (ext.intencion === "saludo") return send("¡Hola! Soy el asistente de Salem Store. ¿En qué puedo ayudarte con tu pedido?");
+    if (ext.intencion === "cancelar") {
+      delete pendingOrders[chatId];
+      return send("Pedido cancelado.");
+    }
 
     const found = [];
-    const textNorm = norm(text);
+    const norm = (t) => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, " ").trim();
 
-    // Búsqueda inteligente de productos
-    for (const p of products) {
-      const nameNorm = norm(p.name);
-      const skuNorm = norm(p.sku);
-      
-      // Si el nombre o SKU normalizado está en el texto normalizado
-      if (textNorm.includes(nameNorm) || (skuNorm && textNorm.includes(skuNorm))) {
-        // Intentar extraer cantidad cerca
-        let qty = 1;
-        const qtyRegex = new RegExp(`(\\d+)\\s*(?:un|x)?\\s*${nameNorm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, "i");
-        const qm = textNorm.match(qtyRegex);
-        if (qm) qty = parseInt(qm[1]);
-
-        const up = (p.salePrice > 0 ? p.salePrice : p.price);
-        found.push({ 
-          name: p.name, 
-          sku: p.sku, 
-          qty, 
-          up, 
-          tp: (p.salePrice > 0 ? "Oferta" : "Base"), 
-          sub: up * qty 
-        });
-      }
+    if (ext.productosSolicitados && Array.isArray(ext.productosSolicitados)) {
+      ext.productosSolicitados.forEach((reqP, idx) => {
+        const sn = norm(reqP);
+        const p = products.find(i => norm(i.name).includes(sn) || norm(i.sku) === sn);
+        if (p) {
+          const qty = (ext.cantidades && ext.cantidades[idx]) || 1;
+          const up = ext.precioPersonalizado || (p.salePrice > 0 ? p.salePrice : p.price);
+          found.push({ 
+            name: p.name, 
+            sku: p.sku, 
+            qty, 
+            up, 
+            tp: ext.precioPersonalizado ? "Manual" : (p.salePrice > 0 ? "Oferta" : "Base"), 
+            sub: up * qty 
+          });
+        }
+      });
     }
 
-    console.log("PRODUCTS_FOUND", { found: found.map(f => f.name) });
+    console.log("productos encontrados", found);
 
-    if (!found.length) {
-      return send("No encontré productos. Escribe nombre exacto o SKU.");
+    if (found.length === 0 && ext.intencion === "nuevo_pedido") {
+      return send("No encontré esos productos en el catálogo disponible. ¿Podrías verificar el nombre o SKU?");
     }
 
-    const subCat = found.reduce((a, b) => a + b.sub, 0);
-    const finalTotal = totalManual || subCat;
-    const typePrice = totalManual ? "Manual" : found[0].tp;
-
-    const payload = {
-      token: process.env.APPS_SCRIPT_TOKEN,
-      cliente: client,
-      telegram: update.message.from.username || update.message.from.first_name,
+    const subtotal = found.reduce((a, b) => a + b.sub, 0);
+    const currentOrder = {
+      cliente: ext.cliente || (pendingOrders[chatId]?.cliente) || "",
       productos: found.map(i => i.name).join(", "),
       skus: found.map(i => i.sku).join(", "),
       cantidades: found.map(i => i.qty).join(", "),
       preciosUnitarios: found.map(i => i.up).join(", "),
-      tipoPrice: typePrice, // Corregido según estructura Sheets
-      tipoPrecio: typePrice,
-      subtotalCatalogo: subCat,
-      subtotal: subCat,
-      totalManual: totalManual,
-      direccion: address,
-      pago: payment,
-      estado: estado,
-      textoOriginal: text
+      subtotalCatalogo: subtotal,
+      subtotal: subtotal,
+      totalManual: ext.totalManual || 0,
+      direccion: ext.direccion || (pendingOrders[chatId]?.direccion) || "",
+      pago: ext.pago || (pendingOrders[chatId]?.pago) || "",
+      estado: ext.estado || "Pendiente",
+      textoOriginal: text,
+      telegram: update.message.from.username || update.message.from.first_name
     };
 
-    console.log("APPS_SCRIPT_PAYLOAD", payload);
-
-    try {
-      const appsRes = await fetch(process.env.APPS_SCRIPT_URL, {
-        method: "POST",
-        body: JSON.stringify(payload)
-      });
-      const appsText = await appsRes.text();
-      console.log("APPS_SCRIPT_RESPONSE", appsText);
-    } catch (sheetErr) {
-      console.error("SHEETS_SAVE_ERROR", sheetErr);
-      await send(`Encontré producto, pero falló guardado en Sheets: ${sheetErr.message}`);
-      return res.status(500).json({ error: sheetErr.message });
+    if (found.length > 0) {
+      pendingOrders[chatId] = currentOrder;
+      console.log("pending order", pendingOrders[chatId]);
     }
 
-    // Responder
-    let resMsg = `✅ <b>Pedido registrado</b>\n\n`;
-    found.forEach(i => {
-      resMsg += `• ${i.qty}x ${i.name} (${i.sku}) - $${i.up.toLocaleString()}\n`;
-    });
-    resMsg += `\n<b>Total:</b> $${finalTotal.toLocaleString()}\n`;
-    resMsg += `<b>Cliente:</b> ${client}\n`;
-    resMsg += `<b>Dirección:</b> ${address}\n`;
-    resMsg += `<b>Pago:</b> ${payment}`;
+    if (ext.faltantes && ext.faltantes.length > 0 && found.length > 0) {
+      return send(`He tomado nota de los productos, pero falta: <b>${ext.faltantes.join(", ")}</b>. Por favor complétalo.`);
+    }
 
-    await send(resMsg);
-    res.status(200).json({ ok: true });
+    if (found.length > 0) {
+      let resMsg = `📋 <b>Resumen del Pedido:</b>\n\n`;
+      found.forEach(i => resMsg += `• ${i.qty}x ${i.name} (${i.sku}) - $${i.up.toLocaleString()}\n`);
+      resMsg += `\n<b>Total:</b> $${(currentOrder.totalManual || subtotal).toLocaleString()}\n`;
+      resMsg += `<b>Cliente:</b> ${currentOrder.cliente || "<i>Pendiente</i>"}\n`;
+      resMsg += `<b>Dirección:</b> ${currentOrder.direccion || "<i>Pendiente</i>"}\n`;
+      resMsg += `<b>Pago:</b> ${currentOrder.pago || "<i>Pendiente</i>"}\n\n`;
+      
+      if (!currentOrder.cliente || !currentOrder.direccion || !currentOrder.pago) {
+        resMsg += `Faltan datos. Por favor indícalos para finalizar.`;
+      } else {
+        resMsg += `¿Confirmas el pedido? Responde <b>"Sí"</b> o <b>"Cancelar"</b>.`;
+      }
+      return send(resMsg);
+    }
 
-  } catch (e) {
-    console.error("GENERAL_ERROR", e.stack);
-    await send("Error procesando pedido: " + e.message);
-    res.status(500).json({ error: e.message });
+    return send("No entendí tu solicitud. Puedes decirme qué productos deseas y tus datos de entrega.");
+
+  } catch (err) {
+    console.error("error stack", err.stack);
+    send("Error interno: " + err.message);
+    res.status(500).json({ error: err.message });
   }
+}
+
+async function callAIForOrderExtraction(text, productsSummary) {
+  const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+  const prompt = `Eres extractor de pedidos para Salem Store. Devuelve solo JSON válido. No inventes productos. Si no estás seguro, marca faltantes. Usa español. Detecta precios colombianos con punto o coma.
+  
+  Catálogo: ${JSON.stringify(productsSummary)}
+  
+  Mensaje: "${text}"
+  
+  JSON schema:
+  {
+    "cliente": string,
+    "productosSolicitados": [string],
+    "cantidades": [number],
+    "precioPersonalizado": number,
+    "totalManual": number,
+    "direccion": string,
+    "pago": string,
+    "estado": string,
+    "intencion": "nuevo_pedido" | "confirmar_pedido" | "cancelar" | "consulta_producto" | "saludo" | "otro",
+    "faltantes": [string]
+  }`;
+
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+    },
+    body: JSON.stringify({
+      model,
+      messages: [{ role: "system", content: prompt }],
+      response_format: { type: "json_object" }
+    })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  const raw = data.choices[0].message.content;
+  return { raw, json: JSON.parse(raw) };
 }
