@@ -1,10 +1,34 @@
 export default async function handler(req, res) {
+  console.log("TELEGRAM_WEBHOOK_HIT", {
+    method: req.method,
+    query: req.query,
+    body: JSON.stringify(req.body)
+  });
+
   if (req.method !== "POST") {
     return res.status(200).json({ ok: true, message: "Bot activo" });
   }
 
+  // Validaciones de entorno
+  if (!process.env.TELEGRAM_BOT_TOKEN) {
+    console.error("Missing TELEGRAM_BOT_TOKEN");
+    return res.status(500).json({ error: "Missing TELEGRAM_BOT_TOKEN" });
+  }
+  if (!process.env.PRODUCTS_URL) {
+    console.error("Missing PRODUCTS_URL");
+    return res.status(500).json({ error: "Missing PRODUCTS_URL" });
+  }
+  if (!process.env.APPS_SCRIPT_URL || !process.env.APPS_SCRIPT_TOKEN) {
+    console.error("Missing Apps Script config");
+    return res.status(500).json({ error: "Missing Apps Script config" });
+  }
+
   const { secret } = req.query;
   if (secret !== process.env.BOT_SECRET) {
+    console.log("BOT_SECRET_INVALID", {
+      expectedExists: Boolean(process.env.BOT_SECRET),
+      received: secret ? "present" : "missing"
+    });
     return res.status(401).json({ error: "No autorizado" });
   }
 
@@ -13,13 +37,18 @@ export default async function handler(req, res) {
 
   const chatId = update.message.chat.id;
   const text = update.message.text || "";
+  console.log("MESSAGE_RECEIVED", { chatId, text });
 
   const send = async (msg) => {
-    await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: chatId, text: msg, parse_mode: "HTML" })
-    });
+    try {
+      await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: chatId, text: msg, parse_mode: "HTML" })
+      });
+    } catch (e) {
+      console.error("TELEGRAM_SEND_ERROR", e);
+    }
   };
 
   if (text.startsWith("/start")) {
@@ -30,63 +59,66 @@ export default async function handler(req, res) {
     const prodRes = await fetch(process.env.PRODUCTS_URL);
     const allProducts = await prodRes.json();
     const products = allProducts.filter(p => p.status === "disponible" && p.stock > 0);
+    console.log("PRODUCTS_LOADED", { count: products.length });
 
-    const norm = (t) => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, " ").trim();
+    const norm = (t) => t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, " ").replace(/\s+/g, " ").trim();
 
-    // Extraer datos generales
-    const totalMatch = text.match(/(?:total|queda en|por todo|total:)\s*(\d+)/i);
-    const totalManual = totalMatch ? parseInt(totalMatch[1]) : 0;
+    // Extraer datos generales mejorado para lenguaje natural
+    // Cliente
+    const clientMatch = text.match(/(?:pedido de|pedido para|cliente:|([a-z]+)\s+pidio)/i);
+    let client = "Desconocido";
+    if (clientMatch) {
+      client = (clientMatch[1] || clientMatch[0].replace(/pedido de|pedido para|cliente:/i, "")).trim();
+    }
 
-    const clientMatch = text.match(/(?:pedido de|pedido para|cliente:)\s*([^\n]+)/i);
-    const client = clientMatch ? clientMatch[1].trim() : "Desconocido";
+    // Precio manual / Total
+    const totalMatch = text.match(/(?:total|queda en|por todo|total:|por|precio:)\s*(\d+[\.\d+]*)/i);
+    let totalManual = 0;
+    if (totalMatch) {
+      totalManual = parseInt(totalMatch[1].replace(/\./g, ""));
+    }
 
+    // Pago
     const payMatch = text.match(/(nequi|daviplata|efectivo|transferencia|tarjeta)/i);
     const payment = payMatch ? payMatch[1] : "Pendiente";
 
-    const dirMatch = text.match(/(?:dirección|dir|entrega en|calle|carrera|barrio|casa|apartamento)\s*[:]?\s*([^\n]+)/i);
-    const address = dirMatch ? dirMatch[1].trim() : "No especificada";
+    // Estado
+    const statusMatch = text.match(/(?:estado:?)\s*([a-z]+)/i);
+    const estado = statusMatch ? statusMatch[1] : "Pendiente";
+
+    // Dirección
+    const dirMatch = text.match(/(?:dirección|dir|entrega en|calle|carrera|barrio|casa|apartamento|direccion:?)\s*([^\n,]+)/i);
+    const address = dirMatch ? dirMatch[0].replace(/dirección|dir|entrega en|direccion/i, "").replace(/^[:\s]+/, "").trim() : "No especificada";
 
     const found = [];
-    const lines = text.split('\n');
+    const textNorm = norm(text);
 
-    for (const line of lines) {
-      if (!line.trim() || /pedido|total|cliente|pago|dir|entrega/.test(line.toLowerCase())) continue;
-
-      let qty = 1;
-      let part = line.trim();
+    // Búsqueda inteligente de productos
+    for (const p of products) {
+      const nameNorm = norm(p.name);
+      const skuNorm = norm(p.sku);
       
-      // Cantidad al inicio
-      const qm = part.match(/^(\d+)\s+(.+)/);
-      if (qm) { 
-        qty = parseInt(qm[1]); 
-        part = qm[2].trim(); 
-      }
+      // Si el nombre o SKU normalizado está en el texto normalizado
+      if (textNorm.includes(nameNorm) || (skuNorm && textNorm.includes(skuNorm))) {
+        // Intentar extraer cantidad cerca
+        let qty = 1;
+        const qtyRegex = new RegExp(`(\\d+)\\s*(?:un|x)?\\s*${nameNorm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, "i");
+        const qm = textNorm.match(qtyRegex);
+        if (qm) qty = parseInt(qm[1]);
 
-      // Precio manual al final
-      let customPrice = null;
-      const pm = part.match(/(.+)\s+(\d+)$/);
-      if (pm) { 
-        part = pm[1].trim(); 
-        customPrice = parseInt(pm[2]); 
-      }
-
-      const sn = norm(part);
-      if (!sn) continue;
-
-      const p = products.find(i => norm(i.name).includes(sn) || norm(i.sku) === sn);
-
-      if (p) {
-        const up = customPrice || (p.salePrice > 0 ? p.salePrice : p.price);
+        const up = (p.salePrice > 0 ? p.salePrice : p.price);
         found.push({ 
           name: p.name, 
           sku: p.sku, 
           qty, 
           up, 
-          tp: customPrice ? "Manual" : (p.salePrice > 0 ? "Oferta" : "Base"), 
+          tp: (p.salePrice > 0 ? "Oferta" : "Base"), 
           sub: up * qty 
         });
       }
     }
+
+    console.log("PRODUCTS_FOUND", { found: found.map(f => f.name) });
 
     if (!found.length) {
       return send("No encontré productos. Escribe nombre exacto o SKU.");
@@ -94,28 +126,41 @@ export default async function handler(req, res) {
 
     const subCat = found.reduce((a, b) => a + b.sub, 0);
     const finalTotal = totalManual || subCat;
+    const typePrice = totalManual ? "Manual" : found[0].tp;
 
-    // Guardar en Apps Script
-    await fetch(process.env.APPS_SCRIPT_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        token: process.env.APPS_SCRIPT_TOKEN,
-        cliente: client,
-        telegram: update.message.from.username || update.message.from.first_name,
-        productos: found.map(i => i.name).join(", "),
-        skus: found.map(i => i.sku).join(", "),
-        cantidades: found.map(i => i.qty).join(", "),
-        preciosUnitarios: found.map(i => i.up).join(", "),
-        tipoPrecio: found.map(i => i.tp).join(", "),
-        subtotalCatalogo: subCat,
-        subtotal: subCat,
-        totalManual: totalManual,
-        direccion: address,
-        pago: payment,
-        estado: "Pendiente",
-        textoOriginal: text
-      })
-    });
+    const payload = {
+      token: process.env.APPS_SCRIPT_TOKEN,
+      cliente: client,
+      telegram: update.message.from.username || update.message.from.first_name,
+      productos: found.map(i => i.name).join(", "),
+      skus: found.map(i => i.sku).join(", "),
+      cantidades: found.map(i => i.qty).join(", "),
+      preciosUnitarios: found.map(i => i.up).join(", "),
+      tipoPrice: typePrice, // Corregido según estructura Sheets
+      tipoPrecio: typePrice,
+      subtotalCatalogo: subCat,
+      subtotal: subCat,
+      totalManual: totalManual,
+      direccion: address,
+      pago: payment,
+      estado: estado,
+      textoOriginal: text
+    };
+
+    console.log("APPS_SCRIPT_PAYLOAD", payload);
+
+    try {
+      const appsRes = await fetch(process.env.APPS_SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+      const appsText = await appsRes.text();
+      console.log("APPS_SCRIPT_RESPONSE", appsText);
+    } catch (sheetErr) {
+      console.error("SHEETS_SAVE_ERROR", sheetErr);
+      await send(`Encontré producto, pero falló guardado en Sheets: ${sheetErr.message}`);
+      return res.status(500).json({ error: sheetErr.message });
+    }
 
     // Responder
     let resMsg = `✅ <b>Pedido registrado</b>\n\n`;
@@ -131,7 +176,7 @@ export default async function handler(req, res) {
     res.status(200).json({ ok: true });
 
   } catch (e) {
-    console.error(e);
+    console.error("GENERAL_ERROR", e.stack);
     await send("Error procesando pedido: " + e.message);
     res.status(500).json({ error: e.message });
   }
